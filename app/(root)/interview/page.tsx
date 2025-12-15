@@ -1,32 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import Agent from "@/components/Agent";
 import { Button } from "@/components/ui/button";
 
+// Original interview creation page, now with NO auth/localStorage redirect.
+// You can open "/interview" directly (on any port, e.g. 3000 or 3001)
+// or via the "+ New Interview" / "+ Start an Interview" buttons.
 const Page = () => {
-  const router = useRouter();
-  const [userName, setUserName] = useState("User");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const userName = "User";
   const userId = "mock-user-id";
-
-  useEffect(() => {
-    const auth = localStorage.getItem("isAuthenticated");
-    const stored = localStorage.getItem("userName");
-    if (!auth) {
-      router.push("/sign-up");
-    } else {
-      setIsAuthenticated(true);
-      if (stored) setUserName(stored);
-    }
-  }, [router]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-500 to-dark-600">
@@ -36,7 +20,7 @@ const Page = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
               <Link
-                href="/"
+                href="/dashboard"
                 className="flex items-center gap-3 hover:opacity-80 transition"
               >
                 <Image src="/logo.svg" alt="PrepWise" width={32} height={32} />
@@ -45,7 +29,7 @@ const Page = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link href="/">
+              <Link href="/dashboard">
                 <Button className="bg-dark-400 border border-dark-200 text-gray-300 hover:border-primary-200 hover:text-primary-200 px-6">
                   ← Back to Dashboard
                 </Button>

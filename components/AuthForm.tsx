@@ -13,6 +13,9 @@ const AuthForm = ({ type }: { type: "sign-in" | "sign-up" }) => {
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,18 +25,64 @@ const AuthForm = ({ type }: { type: "sign-in" | "sign-up" }) => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // UI ONLY - No API integration
-    console.log("Form submitted with:", formData);
-    // Set authentication flag and redirect to interview page
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userName", formData.name || formData.email);
-    // Redirect to interview for new sign-ups, dashboard for sign-ins
-    if (type === "sign-up") {
-      router.push("/interview");
-    } else {
-      router.push("/");
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    // Backend API base URL (your .NET API)
+    const baseUrl = "http://localhost:5216";
+
+    try {
+      if (type === "sign-up") {
+        // Call /auth/register to create user in SQL
+        const res = await fetch(`${baseUrl}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName: formData.name,
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          setError(text || "Sign up failed. Please try again.");
+          return;
+        }
+
+        setSuccess("Account created successfully. Please sign in.");
+        // Small delay so user can see the message, then go to Sign In
+        setTimeout(() => {
+          router.push("/sign-in");
+        }, 1000);
+        return;
+      }
+
+      // Sign In: check credentials via /auth/login
+      const res = await fetch(`${baseUrl}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (!res.ok) {
+        setError("Invalid email or password.");
+        return;
+      }
+
+      // Only after correct credentials, go to dashboard
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Auth error:", err);
+      setError("Cannot reach server. Make sure the .NET API is running.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -120,26 +169,15 @@ const AuthForm = ({ type }: { type: "sign-in" | "sign-up" }) => {
                 {type === "sign-up" ? "Create Account" : "Welcome Back"}
               </h2>
 
-              {/* Test Credentials Display */}
-              {type === "sign-in" && (
-                <div className="mb-6 p-3 bg-dark-400 border border-primary-200 rounded-lg">
-                  <p className="text-xs text-gray-300 mb-2">
-                    <span className="font-semibold text-primary-200">
-                      Test Credentials:
-                    </span>
-                  </p>
-                  <p className="text-xs text-gray-300">
-                    Email:{" "}
-                    <span className="font-mono text-primary-200">
-                      test@prepwise.com
-                    </span>
-                  </p>
-                  <p className="text-xs text-gray-300">
-                    Password:{" "}
-                    <span className="font-mono text-primary-200">
-                      password123
-                    </span>
-                  </p>
+              {error && (
+                <div className="mb-4 rounded-md border border-red-500 bg-red-950/40 px-3 py-2 text-sm text-red-200">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="mb-4 rounded-md border border-emerald-500 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
+                  {success}
                 </div>
               )}
 
@@ -193,13 +231,23 @@ const AuthForm = ({ type }: { type: "sign-in" | "sign-up" }) => {
 
                 <Button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-primary-200 to-primary-300 text-black font-bold rounded-lg hover:shadow-lg transition mt-6"
+                  className="w-full py-3 bg-gradient-to-r from-primary-200 to-primary-300 text-black font-bold rounded-lg hover:shadow-lg transition mt-6 disabled:opacity-50"
+                  disabled={loading}
                 >
-                  {type === "sign-up" ? "Create Account" : "Sign In"}
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin h-5 w-5 mr-3 text-black" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    type === "sign-up" ? "Create Account" : "Sign In"
+                  )}
                 </Button>
               </form>
 
-              {/* Navigation Link */}
               <div className="text-center mt-6">
                 {type === "sign-up" ? (
                   <>
