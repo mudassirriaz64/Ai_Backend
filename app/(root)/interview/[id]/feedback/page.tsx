@@ -3,12 +3,11 @@
 import dayjs from "dayjs";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
-// Mock feedback data
+// Mock feedback data (UI only)
 const mockFeedback: Record<string, any> = {
   "1": {
     id: "feedback-1",
@@ -108,22 +107,7 @@ const mockFeedback: Record<string, any> = {
 
 const Feedback = () => {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const auth = localStorage.getItem("isAuthenticated");
-    if (!auth) {
-      router.push("/sign-up");
-    } else {
-      setIsAuthenticated(true);
-    }
-  }, [router]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const feedback = mockFeedback[id];
 

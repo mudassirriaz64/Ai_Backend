@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 import Agent from "@/components/Agent";
 import { getRandomInterviewCover } from "@/lib/utils";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
 import { Button } from "@/components/ui/button";
 
-// Mock interview data
+// Mock interview data (UI only)
 const mockInterviews: Record<string, any> = {
   "1": {
     id: "1",
@@ -49,27 +48,10 @@ const mockInterviews: Record<string, any> = {
 
 const InterviewDetails = () => {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
-  const [userName, setUserName] = useState("User");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const auth = localStorage.getItem("isAuthenticated");
-    const stored = localStorage.getItem("userName");
-    if (!auth) {
-      router.push("/sign-up");
-    } else {
-      setIsAuthenticated(true);
-      if (stored) setUserName(stored);
-    }
-  }, [router]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   // Mock data
+  const userName = "User";
   const userId = "mock-user-id";
   const interview = mockInterviews[id];
 
