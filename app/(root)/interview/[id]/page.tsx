@@ -1,13 +1,14 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 
-import Agent from "@/components/Agent";
-import { getRandomInterviewCover } from "@/lib/utils";
-import DisplayTechIcons from "@/components/DisplayTechIcons";
-import { Button } from "@/components/ui/button";
+import Agent from "@/frontend/components/interview/Agent";
+import { getRandomInterviewCover } from "@/shared/utils/utils";
+import DisplayTechIcons from "@/frontend/components/common/DisplayTechIcons";
+import { Button } from "@/frontend/components/ui/button";
 
 // Mock interview data (UI only)
 const mockInterviews: Record<string, any> = {
@@ -44,16 +45,96 @@ const mockInterviews: Record<string, any> = {
       "Describe a product launch you led",
     ],
   },
+  "4": {
+    id: "4",
+    role: "Frontend Interview",
+    type: "Technical",
+    techstack: ["React", "JavaScript", "HTML/CSS"],
+    questions: [
+      "Can you tell me about yourself and your frontend development experience?",
+      "What are the key differences between React and Vue.js?",
+      "How do you optimize website performance?",
+      "Explain the difference between let, const, and var in JavaScript",
+      "How do you ensure your code is accessible (a11y)?",
+    ],
+  },
+  "5": {
+    id: "5",
+    role: "Backend Interview",
+    type: "Technical",
+    techstack: [".NET", "SQL Server", "API Design"],
+    questions: [
+      "Tell me about your backend development experience",
+      "How do you design a RESTful API?",
+      "Explain the difference between SQL and NoSQL databases",
+      "How do you handle database migrations?",
+      "What is the difference between authentication and authorization?",
+    ],
+  },
+  "6": {
+    id: "6",
+    role: "Mobile Developer Interview",
+    type: "Technical",
+    techstack: ["React Native", "iOS", "Android"],
+    questions: [
+      "Can you describe your mobile development experience?",
+      "What are the differences between native and cross-platform development?",
+      "How do you handle app state management in mobile apps?",
+      "Explain how you optimize mobile app performance",
+      "How do you handle different screen sizes and orientations?",
+    ],
+  },
+  "7": {
+    id: "7",
+    role: "Full Stack Interview",
+    type: "Technical",
+    techstack: ["Next.js", ".NET", "SQL Server"],
+    questions: [
+      "Tell me about your full stack development experience",
+      "How do you structure a full stack application?",
+      "Explain the flow of data from frontend to backend to database",
+      "How do you ensure security in a full stack application?",
+      "What is your approach to API design and documentation?",
+    ],
+  },
+  "8": {
+    id: "8",
+    role: "UI/UX Interview",
+    type: "Design",
+    techstack: ["Figma", "Design Systems", "User Research"],
+    questions: [
+      "Can you tell me about your design process?",
+      "How do you conduct user research?",
+      "Explain the difference between UI and UX",
+      "How do you create and maintain a design system?",
+      "Describe a time when you had to redesign a feature based on user feedback",
+    ],
+  },
 };
 
 const InterviewDetails = () => {
   const params = useParams();
   const id = params.id as string;
+  const [userName, setUserName] = useState("User");
+  const [userId, setUserId] = useState("mock-user-id");
 
-  // Mock data
-  const userName = "User";
-  const userId = "mock-user-id";
+  // Get interview data first
   const interview = mockInterviews[id];
+
+  // Get user name from localStorage and save interview role
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedName = localStorage.getItem("userName");
+      const storedId = localStorage.getItem("userId");
+      if (storedName) setUserName(storedName);
+      if (storedId) setUserId(storedId);
+      
+      // Save interview role to localStorage for Agent component
+      if (interview) {
+        localStorage.setItem(`interviewRole_${id}`, interview.role);
+      }
+    }
+  }, [id, interview]);
 
   if (!interview) {
     return (

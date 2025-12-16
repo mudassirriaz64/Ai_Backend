@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/frontend/components/ui/button";
 
 // Mock interview data for dashboard UI (no backend, just UI)
 const mockInterviews = [
@@ -33,10 +34,93 @@ const mockInterviews = [
     score: null,
     description: "Assess product strategy and leadership skills",
   },
+  {
+    id: "4",
+    role: "Frontend Interview",
+    type: "Technical",
+    techstack: ["React", "JavaScript", "HTML/CSS"],
+    date: "Not taken",
+    score: null,
+    description: "Practice frontend development skills and UI/UX concepts",
+  },
+  {
+    id: "5",
+    role: "Backend Interview",
+    type: "Technical",
+    techstack: [".NET", "SQL Server", "API Design"],
+    date: "Not taken",
+    score: null,
+    description: "Test your backend architecture and database design skills",
+  },
+  {
+    id: "6",
+    role: "Mobile Developer Interview",
+    type: "Technical",
+    techstack: ["React Native", "iOS", "Android"],
+    date: "Not taken",
+    score: null,
+    description: "Assess mobile app development and cross-platform skills",
+  },
+  {
+    id: "7",
+    role: "Full Stack Interview",
+    type: "Technical",
+    techstack: ["Next.js", ".NET", "SQL Server"],
+    date: "Not taken",
+    score: null,
+    description: "Comprehensive interview covering both frontend and backend",
+  },
+  {
+    id: "8",
+    role: "UI/UX Interview",
+    type: "Design",
+    techstack: ["Figma", "Design Systems", "User Research"],
+    date: "Not taken",
+    score: null,
+    description: "Evaluate UI/UX design skills and user-centered thinking",
+  },
 ];
 
 // Dashboard page with hero section "Get Interview-Ready with AI-Powered Practice & Feedback"
 const DashboardPage = () => {
+  const [completedInterviews, setCompletedInterviews] = useState<any[]>([]);
+
+  // Load completed interviews from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("completedInterviews");
+      if (saved) {
+        try {
+          setCompletedInterviews(JSON.parse(saved));
+        } catch (e) {
+          console.error("Error loading completed interviews:", e);
+        }
+      }
+    }
+  }, []);
+
+  // Combine mock interviews with completed interviews
+  const allInterviews = [
+    ...mockInterviews,
+    ...completedInterviews.map((ci) => ({
+      ...ci,
+      score: ci.score || 0, // Default score if not set
+    })),
+  ];
+
+  // Get unique interviews (avoid duplicates)
+  const uniqueInterviews = allInterviews.reduce((acc: any[], current: any) => {
+    const existing = acc.find((item) => item.id === current.id);
+    if (!existing) {
+      acc.push(current);
+    } else if (current.score && !existing.score) {
+      // Replace with completed version if it has a score
+      const index = acc.indexOf(existing);
+      acc[index] = current;
+    }
+    return acc;
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-500 to-dark-600">
       {/* Navigation Header */}
@@ -103,7 +187,7 @@ const DashboardPage = () => {
             Your Interviews
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockInterviews
+            {uniqueInterviews
               .filter((interview) => interview.score)
               .map((interview) => (
                 <div
@@ -174,7 +258,7 @@ const DashboardPage = () => {
                 </div>
               ))}
           </div>
-          {mockInterviews.filter((i) => i.score).length === 0 && (
+          {uniqueInterviews.filter((i) => i.score).length === 0 && (
             <div className="bg-dark-300 border border-dark-200 rounded-xl p-8 text-center">
               <p className="text-gray-400">
                 You haven&apos;t taken any interviews yet
@@ -189,7 +273,7 @@ const DashboardPage = () => {
             Take Interviews
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockInterviews
+            {uniqueInterviews
               .filter((interview) => !interview.score)
               .map((interview) => (
                 <div
@@ -247,7 +331,7 @@ const DashboardPage = () => {
                 </div>
               ))}
           </div>
-          {mockInterviews.filter((i) => !i.score).length === 0 && (
+          {uniqueInterviews.filter((i) => !i.score).length === 0 && (
             <div className="bg-dark-300 border border-dark-200 rounded-xl p-8 text-center">
               <p className="text-gray-400">There are no interviews available</p>
             </div>

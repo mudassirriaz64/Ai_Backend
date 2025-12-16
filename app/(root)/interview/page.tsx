@@ -1,16 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Agent from "@/components/Agent";
-import { Button } from "@/components/ui/button";
+import Agent from "@/frontend/components/interview/Agent";
+import { Button } from "@/frontend/components/ui/button";
 
-// Original interview creation page, now with NO auth/localStorage redirect.
-// You can open "/interview" directly (on any port, e.g. 3000 or 3001)
-// or via the "+ New Interview" / "+ Start an Interview" buttons.
+// Original interview creation page, now reading user name from localStorage
+// (set after successful Sign In). Falls back to "User" if not found.
 const Page = () => {
-  const userName = "User";
-  const userId = "mock-user-id";
+  const [userName, setUserName] = useState("User");
+  const [userId, setUserId] = useState("mock-user-id");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storedName = localStorage.getItem("userName");
+    const storedId = localStorage.getItem("userId");
+
+    if (storedName) setUserName(storedName);
+    if (storedId) setUserId(storedId);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-500 to-dark-600">
